@@ -31,25 +31,25 @@ The job of the Load balancers is to distribute the incoming traffic among the se
 The jump box is used to access and manage devices in a separate security zone. A jump server is a hardened and monitored device that spans two dissimilar security zones and provides a controlled means of access between them. 
 
 Integrating an ELK server allows users to easily monitor the vulnerable VMs for changes to the files and system configuration.
-- Filbeat watches for events in log files or other specified locations. It forwards these events to either Elasticsearch of Logstash.
+- Filebeat watches for events in log files or other specified locations. It forwards these events to either Elasticsearch of Logstash.
 - Metricbeat records metrics and statistics from the system services running on the server. It forwards these to Elasticsearch or Logstash
 
 The configuration details of each machine may be found below.
 _Note: Use the [Markdown Table Generator](http://www.tablesgenerator.com/markdown_tables) to add/remove values from the table_.
 
-| Name     | Function | IP Address | Operating System |
-|----------|----------|------------|------------------|
-| Jump Box | Gateway  | 10.0.0.4   | Linux            |
-| Web1     |WebServer | 10.0.0.5   | Linux            |
-| Web2     |WebServer | 10.0.0.6   | Linux            |
-| Web3     |WebServer | 10.0.0.7   | Linux            |
-| ELK      |LogServer | 10.1.0.4   | Linux            |
+| Name     | Function | IP Address | Operating System   |
+|----------|----------|------------|--------------------|
+| Jump Box | Gateway  | 10.0.0.1   |Linux(Ubunto 18.04) |
+| Web1     |WebServer | 10.0.0.5   |Linux(Ubunto 18.04) |
+| Web2     |WebServer | 10.0.0.6   |Linux(Ubunto 18.04) |
+| Web3     |WebServer | 10.0.0.7   |Linux(Ubunto 18.04) |
+| ELK      |LogServer | 10.1.0.4   |Linux(Ubunto 18.04) |
+|LoadBalancer | Kabana Host server |IP of Local machine | Linux(Ubunto 18.04) |
 ### Access Policies
 
 The machines on the internal network are not exposed to the public Internet. 
 
-Only the Jump Box machine can accept connections from the Internet. Access to this machine is only allowed from the following IP addresses:
-- 199.58.245.132
+Only the Loadbalancer and ELK machine can accept connections from the Internet. Access to this machine is only allowed from the following IP addresses: 13.92.231.111 , 52.228.119.219
 
 Machines within the network can only be accessed by Jump Box.
 
@@ -62,11 +62,11 @@ A summary of the access policies in place can be found in the table below.
 | Web1     | Yes                 | NLB IP Addr          |
 | Web2     | Yes                 | NLB IP Addr          |
 | Web3     | Yes                 | NLB IP Addr          |
-| Elk      | Yes                 | 199.58.248.131       |
+| Elk      | Yes                 | 52.228.119.219       |
 
 ### Elk Configuration
 
-Ansible was used to automate configuration of the ELK machine. No configuration was performed manually, which is advantageous because...
+Ansible was used to automate configuration of the ELK machine. No configuration was performed manually, which is advantageous because ansible can help you on platform, configuration management, application deployment, intra-service orchestration and provisioning. It is very simple to setup and more powerful tool. In other words, it frees up time and increases efficiency
 
 The playbook implements the following tasks:
 Ansible allows you to quickly and easily deploy multi-tier apps. By writing simple playbooks rather than custome code, Ansible allows youto get your system to the state you want it to be in, all with little effort.
@@ -75,9 +75,15 @@ The playbook implements the following tasks:
 
 - Create the virtual machine, configure the new ELK VM to connect through your Jump-Box using Docker attatched to the Ansible container, and add peering to your other virtual network connected to the webservers.
 - Add ELK to the Ansible hosts file and create a new Ansible playbook to use for your new ELK VM.
-- The playbook will download and install Docker on your ELK VM, you then need to download and run the ELK container.
--You then need to configure the ELK security group to allow traffic over port 5601 from the workstation.  
--Verify that you can load the ELK stack server from your browser at `http://[your.VM.IP]:5601/app/kibana`.
+- Become root
+- install Python
+- increase virtual memory
+- install Docker Modules. The playbook will download and install Docker on your ELK VM, you then need to download and run the ELK container.
+- download and lunch a docker elk container
+- Define communication ports that ELK runs on
+- You then need to configure the ELK security group to allow traffic over port 5601 from the workstation.  
+- Verify that you can load the ELK stack server from your browser at `http://[your.VM.IP]:5601/app/kibana`.
+
 
 The following screenshot displays the result of running `docker ps` after successfully configuring the ELK instance.
 
@@ -88,13 +94,13 @@ This ELK server is configured to monitor the following machines:
 - | Machine | Private IP | 
   | Web1    | 10.0.0.5   | 
   | Web2    | 10.0.0.6   | 
-  | Web3    | 10.0.0.8   | 
+  | Web3    | 10.0.0.7   | 
 
 We have installed the following Beats on these machines:
 
 These Beats allow us to collect the following information from each machine:
-- Filbeat watches for events in log files or other specified locations. It forwards these events to either Elasticsearch of Logstash.
-- Metricbeat records metrics and statistics from the system services running on the server. It forwards these to Elasticsearch or Logstash
+- Filbeat watches for events in log files or other specified locations. It forwards these events to either Elasticsearch of Logstash. E.g. /var/log/*.log/. collects systemd logs and forward them to ELK
+- Metricbeat records metrics and statistics from the system services running on the server. It forwards these to Elasticsearch or Logstash.  such as: Apache and Mongo DB. here metricbeat collects all docker container metric data and send it to ELK
 
 These Beats allow us to collect the following information from each machine:
 - _TODO: In 1-2 sentences, explain what kind of data each beat collects, and provide 1 example of what you expect to see. E.g., `Winlogbeat` collects Windows logs, which we use to track user logon events, etc._
@@ -105,7 +111,7 @@ In order to use the playbook, you will need to have an Ansible control node alre
 SSH into the control node and follow the steps below:
 - Copy the my-playbook.yml file to /etc/ansible/my-playbook.yml.
 - Update the hosts file to include [host IP] ansible_python_interpreter=/usr/bin/python3 
-- Run the playbook, and navigate to http://40.84.199.221:5601/app/kibana to check that the installation worked as expected.
+- Run the playbook, and navigate to "PublicIPofKibanaServer:5601" (http://publicIP:5601/app/kibana) to check that the installation worked as expected.
 
 
 _As a **Bonus**, provide the specific commands the user will need to run to download the playbook, update the files, etc._
